@@ -1,0 +1,140 @@
+﻿<Window x:Class="ToDo.Windows.TaskListWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ToDo.Windows"
+        xmlns:local0="clr-namespace:ToDo"
+        xmlns:local1="clr-namespace:ToDo.Helpers"
+        mc:Ignorable="d"
+        Title="Список задач" Height="550" Width="1100">
+
+    <Window.Resources>
+        <local1:DateTimeConverter x:Key="DTConv"/>
+        <local1:PriorityConverter x:Key="PrConv" />
+        <local1:StatusConverter x:Key="StConv" />
+    </Window.Resources>
+
+    <Window.CommandBindings>
+        <CommandBinding Command="local0:WindowCommands.NewTask" Executed="NewTask_Executed"/>
+        <CommandBinding Command="local0:WindowCommands.EditTask" Executed="EditTask_Executed"/>
+        <CommandBinding Command="local0:WindowCommands.DeleteTask" Executed="DeleteTask_Executed"/>
+        <CommandBinding Command="local0:WindowCommands.ClearFilters" Executed="ClearFilters_Executed"/>
+        <CommandBinding Command="local0:WindowCommands.GetStatistics" Executed="GetStatistics_Executed"/>
+    </Window.CommandBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0">
+            <Menu DockPanel.Dock="Top" Background="#7FFF00">
+                <MenuItem Header="Задачи">
+                    <MenuItem Header="Новая задача" Command="local0:WindowCommands.NewTask"/>
+                    <MenuItem Header="Статистика" Command="local0:WindowCommands.GetStatistics"/>
+                </MenuItem>
+            </Menu>
+        </DockPanel>
+
+        <Grid Grid.Row="1" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <GroupBox Header="Фильтры" Margin="0 0 10 0" Padding="10">
+                <StackPanel>
+                    <TextBlock Text="Поиск:" Margin="0 8 0 4"/>
+                    <TextBox x:Name="SearchField" TextChanged="FiltersChanged" Height="26"/>
+
+                    <TextBlock Text="Статус:" Margin="0 12 0 4"/>
+                    <ComboBox x:Name="StatusField" Height="26" SelectionChanged="FiltersChanged">
+                        <ComboBoxItem Content="Все"/>
+                        <ComboBoxItem Content="Новые"/>
+                        <ComboBoxItem Content="В процессе"/>
+                        <ComboBoxItem Content="Завершены"/>
+                    </ComboBox>
+
+                    <TextBlock Text="Приоритет:" Margin="0 12 0 4"/>
+                    <ComboBox x:Name="PriorityField" Height="26" SelectionChanged="FiltersChanged">
+                        <ComboBoxItem Content="Все"/>
+                        <ComboBoxItem Content="Низкий"/>
+                        <ComboBoxItem Content="Средний"/>
+                        <ComboBoxItem Content="Высокий"/>
+                    </ComboBox>
+
+                    <TextBlock Text="Дата:" Margin="0 12 0 4"/>
+                    <DatePicker x:Name="DateField" Height="26" SelectedDateChanged="FiltersChanged"/>
+
+                    <CheckBox x:Name="ImportantOnlyField" Content="Только важные" Margin="0 12 0 0" Height="24"
+                              Checked="FiltersChanged" Unchecked="FiltersChanged"/>
+
+                    <Button Content="Очистить все фильтры" Margin="0 20 0 0" Height="30" Command="local0:WindowCommands.ClearFilters"/>
+                </StackPanel>
+            </GroupBox>
+
+            <DataGrid x:Name="TasksList" Grid.Column="1" AutoGenerateColumns="False" IsReadOnly="True"
+                      SelectionMode="Single" MouseDoubleClick="TasksList_MouseDoubleClick" ItemsSource="{Binding}">
+
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Изменить" Command="local0:WindowCommands.EditTask" />
+                        <MenuItem Header="Удалить" Command="local0:WindowCommands.DeleteTask" />
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
+
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="" Width="50" SortMemberPath="ImportantFlag">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="★" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                           FontSize="18" Foreground="Orange">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ImportantFlag}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="Наименование" Binding="{Binding Name}" Width="*" MinWidth="180"/>
+                    
+                    <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="*" MinWidth="200"/>
+                    
+                    <DataGridTemplateColumn Header="Дата" Width="120" SortMemberPath="Date">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Date,Converter={StaticResource DTConv}}" TextWrapping="Wrap"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    
+                    <DataGridTemplateColumn Header="Статус" Width="110" SortMemberPath="Status">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Status,Converter={StaticResource StConv}}" TextWrapping="Wrap"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    
+                    <DataGridTemplateColumn Header="Приоритет" Width="110" SortMemberPath="Priority">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Priority,Converter={StaticResource PrConv}}" TextWrapping="Wrap"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </Grid>
+</Window>

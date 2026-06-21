@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ToDo.Data/ToDo.Data.csproj" />
+  <Project Path="ToDo.Test/ToDo.Test.csproj" />
+  <Project Path="ToDo/ToDo.csproj" />
+</Solution>
